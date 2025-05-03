@@ -1,112 +1,111 @@
-import React, { useState } from 'react'; // Removed useEffect for fetch
-import { Box, Typography, Button, Alert, Paper } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, Button, Alert } from '@mui/material'; // Removed Paper import
 import AddIcon from '@mui/icons-material/Add';
 import { addJd, deleteJd } from '../../services/jdService';
 import JdCard from './JdCard';
 import AddJdModal from './AddJdModal';
 import LoadingSpinner from '../common/LoadingSpinner';
 
-// Added showAddButton prop, default to true for backward compatibility if needed
 const JdList = ({ jds, setJds, selectedJdIds, onSelectionChange, showAddButton = true }) => {
-  const [isLoading, setIsLoading] = useState(false); // For delete/add ops
+  const [isLoading, setIsLoading] = useState(false); // For delete/add ops ONLY if showAddButton is true
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // handleAddJd and handleDeleteJd remain the same as before
+   // handleAddJd and handleDeleteJd only relevant if showAddButton is true
    const handleAddJd = async (newJdData) => {
-    setIsLoading(true);
-    setError('');
-    try {
-        const addedJd = await addJd(newJdData);
-        // Use the setter passed from the parent (App or JdAdminPage)
-        setJds(prevJds => [...prevJds, addedJd]);
-        setIsModalOpen(false);
-    } catch (err) {
-        console.error("Error adding JD:", err)
-        setError(err.message || "Failed to add JD")
-    } finally {
-        setIsLoading(false);
-    }
-  };
+        if (!showAddButton) return; // Shouldn't be called, but safe check
+        // ... rest of add logic ...
+        setIsLoading(true);
+        setError('');
+        try {
+            const addedJd = await addJd(newJdData);
+            setJds(prevJds => [...prevJds, addedJd]);
+            setIsModalOpen(false);
+        } catch (err) {
+            console.error("Error adding JD:", err)
+            setError(err.message || "Failed to add JD")
+        } finally {
+            setIsLoading(false);
+        }
+   };
 
-  const handleDeleteJd = async (id) => {
-    setError('');
-    setIsLoading(true);
-    try {
-      await deleteJd(id);
-      // Use the setter passed from the parent
-      setJds(prevJds => prevJds.filter(jd => jd.id !== id));
-      // Update selection in the parent (MappingPage)
-      onSelectionChange(selectedJdIds.filter(selectedId => selectedId !== id));
-    } catch (err) {
-      setError(`Failed to delete JD: ${err.message || 'Unknown error'}`);
-      console.error(err);
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
+   const handleDeleteJd = async (id) => {
+       if (!showAddButton) return; // Only allow delete from Admin page
+        // ... rest of delete logic ...
+        setError('');
+        setIsLoading(true);
+        try {
+            await deleteJd(id);
+            setJds(prevJds => prevJds.filter(jd => jd.id !== id));
+            onSelectionChange(selectedJdIds.filter(selectedId => selectedId !== id));
+        } catch (err) {
+            setError(`Failed to delete JD: ${err.message || 'Unknown error'}`);
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+   };
 
   const handleToggleSelection = (id) => {
-    // Only call selection change if the callback exists (for Mapping Page)
-    if (onSelectionChange) {
-        const newSelection = selectedJdIds.includes(id)
-          ? selectedJdIds.filter(selectedId => selectedId !== id)
-          : [...selectedJdIds, id];
-        onSelectionChange(newSelection);
-    }
+     // Mapping page expects single selection, Admin page doesn't care
+     if (onSelectionChange) {
+       // Simplified for single selection: always replace
+       const newSelection = selectedJdIds.includes(id) ? [] : [id]; // Toggle or select new
+       onSelectionChange(newSelection);
+     }
   };
 
 
   return (
-    // Removed outer Paper, assuming parent page provides it
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        {/* Conditionally render title based on context? Or keep generic */}
-        {/* <Typography variant="h6">Job Descriptions</Typography> */}
-        {showAddButton && ( // Conditionally render Add button
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}> {/* Ensure Box takes height */}
+      {/* Header Section */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+        {/* Optional: Title can be added by parent page */}
+        {showAddButton && (
           <Button
-            variant="contained"
+            variant="contained" // Make Add button more prominent on Admin page
             size="small"
             startIcon={<AddIcon />}
             onClick={() => setIsModalOpen(true)}
-            disabled={isLoading} // Disable if delete is happening
+            disabled={isLoading}
           >
-            Add JD
+            Add New JD
           </Button>
         )}
       </Box>
 
-      {isLoading && <LoadingSpinner message="Processing..." />}
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {/* Loading/Error for Admin operations */}
+      {showAddButton && isLoading && <Box sx={{my:1}}><LoadingSpinner message="Processing..." /></Box>}
+      {showAddButton && error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      {/* Display logic remains similar */}
-      {!isLoading && (!jds || jds.length === 0) && !error && (
-        <Typography color="text.secondary" align="center" sx={{ p: 2 }}>
-           {showAddButton ? "No Job Descriptions found. Add one!" : "No Job Descriptions available."}
-        </Typography>
-      )}
-
-       {jds?.length > 0 && !showAddButton && ( // Show selection text only on mapping page
-         <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-            Select JD(s) to analyze CVs against:
+       {/* Instructions / Empty State */}
+       {!showAddButton && jds?.length > 0 && ( // Show selection text only on mapping page
+         <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: 'block' }}>
+            Click a Job Description below to select it for analysis.
          </Typography>
       )}
+        {(!jds || jds.length === 0) && (
+            <Typography color="text.secondary" align="center" sx={{ p: 2, flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {showAddButton ? "No Job Descriptions found. Add one!" : "No Job Descriptions available."}
+            </Typography>
+        )}
 
-      <Box sx={{ maxHeight: showAddButton ? 400 : 350, overflowY: 'auto', pr: 1 }}>
+
+      {/* Scrollable List Area */}
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5, mt: (!showAddButton && jds?.length > 0) ? 0 : 1 }}>
         {jds?.map(jd => (
           <JdCard
             key={jd.id}
             jd={jd}
-            onDelete={handleDeleteJd}
+            onDelete={showAddButton ? handleDeleteJd : undefined} // Only pass delete if on admin page
             onSelect={handleToggleSelection}
             isSelected={selectedJdIds.includes(jd.id)}
-            // Conditionally disable selection interaction if needed?
+            showDeleteButton={showAddButton} // Tell card whether to show delete
           />
         ))}
       </Box>
 
-      {/* Modal is only relevant if Add button is shown */}
+      {/* Modal (only rendered if needed) */}
       {showAddButton && (
         <AddJdModal
             isOpen={isModalOpen}

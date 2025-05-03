@@ -10,32 +10,31 @@ body {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif; /* MUI default stack */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f4f6f8; /* Match theme background */
 }
 
-/* Optional: Improve scrollbar appearance (example) */
+/* Optional: Improve scrollbar appearance */
 /* Works on WebKit browsers (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-  width: 8px; /* Width of the vertical scrollbar */
-  height: 8px; /* Height of the horizontal scrollbar */
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Color of the tracking area */
+  background: #e0e0e0; /* Lighter track */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1; /* Color of the scroll thumb */
+  background: #aeaeae; /* Slightly darker thumb */
   border-radius: 4px;
+  border: 1px solid #e0e0e0; /* Optional border */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8; /* Slightly darker on hover */
+  background: #888888; /* Darker on hover */
 }
-
 
 /*
   MUI's CssBaseline component handles most CSS resets and base styling.
-  You generally don't need Tailwind directives (@tailwind base; etc.) here
-  when primarily using MUI.
 */

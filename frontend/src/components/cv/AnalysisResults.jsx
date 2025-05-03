@@ -60,7 +60,7 @@ const AnalysisResults = ({ analysisData, jds }) => {
   }
 
   return (
-    <Paper elevation={2} sx={{ p: 2, mt: 2 }}> {/* Wrap results in Paper */}
+    <Paper elevation={2} sx={{ p: 2, mt: 4, clear: 'both' }}> {/* Added margin-top and clear:both */}
       <Typography variant="h5" gutterBottom>Ranked Candidates</Typography>
 
       {/* Controls Row */}

@@ -9,10 +9,11 @@ import ScoreOverviewChart from '../components/dashboard/ScoreOverviewChart';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { analyzeCvs } from '../services/analysisService';
 
+// Receives JDs from App.jsx, manages its own state for mapping process
 const MappingPage = ({ jds }) => {
   const [selectedJdIds, setSelectedJdIds] = useState([]);
   const [uploadedCvFiles, setUploadedCvFiles] = useState([]);
-  const [analysisResults, setAnalysisResults] = useState(null);
+  const [analysisResults, setAnalysisResults] = useState(null); // { jdId: [results...] }
   const [isLoading, setIsLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState('');
 
@@ -22,123 +23,135 @@ const MappingPage = ({ jds }) => {
 
   const handleFilesAccepted = useCallback((files) => {
     setUploadedCvFiles(files);
-    setAnalysisResults(null);
+    setAnalysisResults(null); // Clear results on new files
     setAnalysisError('');
   }, []);
 
   const handleAnalyze = async () => {
+    // Basic validation
     if (uploadedCvFiles.length === 0 || !uploadedCvFiles.every(f => f instanceof File)) {
-       setAnalysisError('Please upload valid CV files.');
+       setAnalysisError('Please upload valid CV files before analyzing.');
        return;
     }
     if (selectedJdIds.length === 0) {
       setAnalysisError('Please select at least one Job Description.');
       return;
     }
+
     setIsLoading(true);
     setAnalysisError('');
-    setAnalysisResults(null);
+    setAnalysisResults(null); // Clear previous before new analysis
+
+    console.log("[MappingPage] Attempting to call analyzeCvs service...");
     try {
       const results = await analyzeCvs(uploadedCvFiles, selectedJdIds);
+      console.log("[MappingPage] Analysis successful, results:", results);
       setAnalysisResults(results);
     } catch (err) {
       console.error("[MappingPage] Analysis failed:", err);
-      setAnalysisError(err?.error || err?.message || 'Analysis failed.');
+      setAnalysisError(err?.error || err?.message || 'Analysis failed. See console.');
     } finally {
       setIsLoading(false);
     }
   };
 
+   // Determine which JD's results to show in the overview charts
    const primaryJdIdForCharts = selectedJdIds.length > 0 ? selectedJdIds[0] : (analysisResults ? Object.keys(analysisResults)[0] : null);
    const resultsForCharts = primaryJdIdForCharts ? analysisResults?.[primaryJdIdForCharts] : [];
    const primaryJdTitle = jds.find(jd => jd.id === primaryJdIdForCharts)?.title || '';
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>JD - CV Mapping</Typography>
-
-      {/* Top Section: JD Selection & CV Upload (Split Screen) */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Main Split Screen Layout */}
+      <Box sx={{ display: 'flex', mb: 3, minHeight: '250px' }}>
         {/* Left Side: JD List */}
-        <Grid item xs={12} md={5} lg={4}> {/* Adjusted grid size */}
-          <Paper elevation={2} sx={{ p: 2, height: '100%' }}>
-            <Typography variant="h6" gutterBottom>Select Job Description(s)</Typography>
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            width: '50%', 
+            p: 2, 
+            mr: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
+          }}
+        >
+          <Typography variant="h6" gutterBottom>Select Job Description(s)</Typography>
+          <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
             <JdList
               jds={jds}
               selectedJdIds={selectedJdIds}
               onSelectionChange={handleJdSelectionChange}
               showAddButton={false}
-              setJds={() => {}}
+              setJds={() => {}} // No-op function
             />
-          </Paper>
-        </Grid>
+          </Box>
+        </Paper>
 
         {/* Right Side: CV Upload & Analyze Button */}
-        <Grid item xs={12} md={7} lg={8}> {/* Adjusted grid size */}
-           <Paper elevation={2} sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Typography variant="h6" gutterBottom>Upload CVs (PDF)</Typography>
-             <Box sx={{ flexGrow: 1, mb: 2 }}>
-                <CvDropzone onFilesAccepted={handleFilesAccepted} />
-             </Box>
-             <Button
-                variant="contained"
-                size="large"
-                onClick={handleAnalyze}
-                disabled={isLoading || uploadedCvFiles.length === 0 || selectedJdIds.length === 0}
-                fullWidth
-             >
-               {isLoading ? 'Analyzing...' : 'Analyze CVs'}
-             </Button>
-             {/* Show loading/error related to analysis here */}
-             {isLoading && <Box sx={{mt: 1}}><LoadingSpinner message="Analyzing..." /></Box>}
-             {analysisError && <Alert severity="error" sx={{ mt: 1 }}>{analysisError}</Alert>}
-           </Paper>
-        </Grid>
-      </Grid>
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            width: '50%', 
+            p: 2, 
+            ml: 1,
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <Typography variant="h6" gutterBottom>Upload CVs (PDF)</Typography>
+          <Box sx={{ flexGrow: 1, mb: 2 }}>
+            <CvDropzone onFilesAccepted={handleFilesAccepted} />
+          </Box>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={handleAnalyze}
+            disabled={isLoading || uploadedCvFiles.length === 0 || selectedJdIds.length === 0}
+            fullWidth
+          >
+            {isLoading ? 'Analyzing...' : 'Analyze CVs'}
+          </Button>
+          {isLoading && <Box sx={{mt: 1}}><LoadingSpinner message="Analyzing..." /></Box>}
+          {analysisError && <Alert severity="error" sx={{ mt: 1 }}>{analysisError}</Alert>}
+        </Paper>
+      </Box>
 
-      {/* Middle Section: Analysis Overview Charts (Moved Below Inputs) */}
-      {/* Show only if analysis is done and successful */}
-       {analysisResults && !isLoading && !analysisError && (
-          <Paper elevation={2} sx={{ p: {xs: 1, sm: 2}, mb: 3 }}>
-             <Typography variant="h6" gutterBottom sx={{ mb: 2, px:1 }}>
-                 Analysis Overview {primaryJdTitle && `for "${primaryJdTitle}"`}
-             </Typography>
-            <Grid container spacing={3}>
-               <Grid item xs={12} md={6} lg={4}> {/* Adjusted grid size for 3 charts */}
-                   <ScoreOverviewChart results={resultsForCharts} />
-               </Grid>
-               <Grid item xs={12} md={6} lg={4}>
-                   <ScoreDistributionChart results={resultsForCharts} />
-               </Grid>
-               <Grid item xs={12} md={12} lg={4}> {/* Allow breakdown to take full on medium */}
-                   <AverageBreakdownChart results={resultsForCharts} />
-               </Grid>
+      {/* Bottom Section: Charts (only show if results exist) */}
+      {analysisResults && !isLoading && (
+        <Paper elevation={2} sx={{ p: 2, mb: 3, clear: 'both', mt: 4 }}>
+          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+            Analysis Overview {primaryJdTitle && `for "${primaryJdTitle}"`}
+          </Typography>
+          <Grid container spacing={3}>
+            {/* Score Overview Chart */}
+            <Grid item xs={12} md={4}>
+              <ScoreOverviewChart results={resultsForCharts} />
             </Grid>
-           </Paper>
-        )}
+            {/* Existing Charts */}
+            <Grid item xs={12} md={4}>
+              <ScoreDistributionChart results={resultsForCharts} />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <AverageBreakdownChart results={resultsForCharts} />
+            </Grid>
+          </Grid>
+        </Paper>
+      )}
 
-
-      {/* Bottom Section: Analysis Results List */}
-      {/* Show only if analysis is done and successful */}
-      {!isLoading && analysisResults && !analysisError && (
+      {/* Analysis Results List (only show if results exist) */}
+      {!isLoading && analysisResults && (
         <AnalysisResults analysisData={analysisResults} jds={jds} />
       )}
 
-      {/* Placeholder if no analysis run yet OR if analysis failed */}
+      {/* Placeholder if no analysis run yet */}
       {!isLoading && !analysisResults && !analysisError && (
-         <Paper elevation={2} sx={{ p: 4, textAlign: 'center', mt: 3 }}>
-            <Typography color="text.secondary">
-                Select a JD, upload CVs, and click "Analyze CVs" to see results.
-            </Typography>
-         </Paper>
+        <Paper elevation={2} sx={{ p: 4, textAlign: 'center', mt: 4, clear: 'both' }}>
+          <Typography color="text.secondary">
+            Select a JD, upload CVs, and click "Analyze CVs" to see results.
+          </Typography>
+        </Paper>
       )}
-      {/* Display error prominently if analysis failed */}
-       {!isLoading && analysisError && !analysisResults && (
-          <Alert severity="error" sx={{ mt: 3 }}>
-              Analysis failed: {analysisError}
-          </Alert>
-        )}
-
     </Box>
   );
 };

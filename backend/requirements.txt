@@ -1,0 +1,7 @@
+Flask>=2.0
+python-dotenv>=0.19
+google-generativeai>=0.3 # Check for the latest version
+PyPDF2>=3.0 # Or pdfminer.six if PyPDF2 has issues
+Flask-Cors>=3.0
+requests # Often useful, though maybe not strictly needed here yet
+uuid # For generating IDs

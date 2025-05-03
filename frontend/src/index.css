@@ -1,0 +1,41 @@
+/* Remove default browser margin/padding */
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+/* Set a base font family (MUI ThemeProvider usually handles this, but good fallback) */
+body {
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif; /* MUI default stack */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optional: Improve scrollbar appearance (example) */
+/* Works on WebKit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the vertical scrollbar */
+  height: 8px; /* Height of the horizontal scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color of the tracking area */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1; /* Color of the scroll thumb */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8; /* Slightly darker on hover */
+}
+
+
+/*
+  MUI's CssBaseline component handles most CSS resets and base styling.
+  You generally don't need Tailwind directives (@tailwind base; etc.) here
+  when primarily using MUI.
+*/

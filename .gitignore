@@ -1,0 +1,116 @@
+# --- Environment Variables ---
+# Never commit .env files!
+.env
+.env.*
+!/.env.example # Allow example files if you create them
+
+# --- Python / Backend ---
+# Virtual Environment
+/backend/venv/
+/backend/.venv/
+/backend/env/
+/backend/.env/ # If you name your venv folder .env
+
+# Compiled Python files and C extensions
+*.pyc
+*.pyo
+*.pyd
+*build/
+*develop-eggs/
+*dist/
+*downloads/
+*eggs/
+*.egg-info/
+*lib/
+*lib64/
+*parts/
+*sdist/
+*var/
+*wheels/
+*share/python-wheels/
+*.egg-log/
+
+# Python Caches
+/backend/__pycache__/
+.pytest_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+
+# Flask instance folder (often contains secrets/DB)
+/backend/instance/
+
+# Runtime files
+*.log
+*.pot
+*.pytx
+
+# Database files (if using SQLite locally and not in instance)
+# *.db
+# *.sqlite
+# *.sqlite3
+
+# --- Node / Frontend ---
+# Dependencies
+/frontend/node_modules/
+
+# Build artifacts
+/frontend/dist/
+/frontend/.vite/
+/frontend/build/ # For Create React App if used
+/frontend/.output/
+/frontend/.nuxt/ # If using Nuxt
+
+# Caches
+/frontend/.npm/
+/frontend/.yarn-cache/
+/frontend/.pnp/
+/frontend/.pnp.js
+/frontend/.parcel-cache/
+
+# Logs
+/frontend/npm-debug.log*
+/frontend/yarn-error.log
+/frontend/yarn-debug.log*
+
+# --- OS Generated Files ---
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# --- IDE / Editor Specific ---
+.vscode/
+!.vscode/settings.json # Example: Allow sharing specific settings
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+*.sublime-project
+
+# JetBrains (.idea)
+.idea/
+*.iws
+*.iml
+modules.xml
+# Ignore sensitive JetBrains files (add others as needed)
+.idea/shelf/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+
+# --- Other ---
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+nosetests.xml
+
+# Tox environment directory
+.tox/

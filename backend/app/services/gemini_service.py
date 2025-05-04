@@ -2,11 +2,6 @@ import google.generativeai as genai
 import json
 from flask import current_app
 
-# --- IMPORTANT: PROMPT ENGINEERING IS KEY ---
-# This prompt needs significant refinement and testing.
-# Explicitly ask for JSON output.
-# Clearly define each field you expect.
-# Provide examples if necessary in a few-shot scenario.
 BASE_PROMPT_TEMPLATE = """
 Analyze the following CV text in the context of the provided Job Description (JD).
 Provide a detailed analysis structured as a JSON object.
@@ -37,8 +32,7 @@ def get_gemini_model():
         raise ValueError("Gemini API Key not configured.")
 
     genai.configure(api_key=api_key)
-    # Adjust model name as needed (check Gemini documentation for latest models)
-    # Consider safety settings and generation config
+
     model = genai.GenerativeModel(
         model_name='gemini-1.5-flash', # Or another suitable model
          generation_config={"response_mime_type": "application/json"} # Request JSON directly!

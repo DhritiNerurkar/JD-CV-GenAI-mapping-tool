@@ -1,26 +1,30 @@
 import React, { useState } from 'react';
-import { Box, Typography, Button, Alert } from '@mui/material'; // Removed Paper import
+import { Box, Typography, Button, Alert } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { addJd, deleteJd } from '../../services/jdService';
 import JdCard from './JdCard';
 import AddJdModal from './AddJdModal';
 import LoadingSpinner from '../common/LoadingSpinner';
+import ViewJdDialog from './ViewJdDialog'; // Import the new dialog
 
 const JdList = ({ jds, setJds, selectedJdIds, onSelectionChange, showAddButton = true }) => {
-  const [isLoading, setIsLoading] = useState(false); // For delete/add ops ONLY if showAddButton is true
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  // --- State for View Dialog ---
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [jdToView, setJdToView] = useState(null);
+  // --- End State for View Dialog ---
 
-   // handleAddJd and handleDeleteJd only relevant if showAddButton is true
    const handleAddJd = async (newJdData) => {
-        if (!showAddButton) return; // Shouldn't be called, but safe check
-        // ... rest of add logic ...
+       // ... add logic remains same ...
+        if (!showAddButton) return;
         setIsLoading(true);
         setError('');
         try {
             const addedJd = await addJd(newJdData);
             setJds(prevJds => [...prevJds, addedJd]);
-            setIsModalOpen(false);
+            setIsAddModalOpen(false);
         } catch (err) {
             console.error("Error adding JD:", err)
             setError(err.message || "Failed to add JD")
@@ -30,8 +34,8 @@ const JdList = ({ jds, setJds, selectedJdIds, onSelectionChange, showAddButton =
    };
 
    const handleDeleteJd = async (id) => {
-       if (!showAddButton) return; // Only allow delete from Admin page
-        // ... rest of delete logic ...
+       // ... delete logic remains same ...
+        if (!showAddButton) return;
         setError('');
         setIsLoading(true);
         try {
@@ -47,26 +51,34 @@ const JdList = ({ jds, setJds, selectedJdIds, onSelectionChange, showAddButton =
    };
 
   const handleToggleSelection = (id) => {
-     // Mapping page expects single selection, Admin page doesn't care
-     if (onSelectionChange) {
-       // Simplified for single selection: always replace
-       const newSelection = selectedJdIds.includes(id) ? [] : [id]; // Toggle or select new
+    if (onSelectionChange) {
+       const newSelection = selectedJdIds.includes(id) ? [] : [id];
        onSelectionChange(newSelection);
      }
   };
 
+  // --- Handler for View Details ---
+  const handleViewDetails = (jd) => {
+      setJdToView(jd);
+      setIsViewDialogOpen(true);
+  };
+
+  const handleCloseViewDialog = () => {
+      setIsViewDialogOpen(false);
+      setJdToView(null); // Clear selected JD
+  };
+  // --- End Handler ---
+
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}> {/* Ensure Box takes height */}
-      {/* Header Section */}
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-        {/* Optional: Title can be added by parent page */}
         {showAddButton && (
           <Button
-            variant="contained" // Make Add button more prominent on Admin page
+            variant="contained"
             size="small"
             startIcon={<AddIcon />}
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsAddModalOpen(true)}
             disabled={isLoading}
           >
             Add New JD
@@ -74,14 +86,12 @@ const JdList = ({ jds, setJds, selectedJdIds, onSelectionChange, showAddButton =
         )}
       </Box>
 
-      {/* Loading/Error for Admin operations */}
       {showAddButton && isLoading && <Box sx={{my:1}}><LoadingSpinner message="Processing..." /></Box>}
       {showAddButton && error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-       {/* Instructions / Empty State */}
-       {!showAddButton && jds?.length > 0 && ( // Show selection text only on mapping page
+       {!showAddButton && jds?.length > 0 && (
          <Typography variant="caption" color="text.secondary" sx={{ mb: 1.5, display: 'block' }}>
-            Click a Job Description below to select it for analysis.
+            Click a Job Description below to select it. Use the <VisibilityIcon sx={{fontSize: 'inherit', verticalAlign: 'bottom'}}/> icon to view details.
          </Typography>
       )}
         {(!jds || jds.length === 0) && (
@@ -90,33 +100,43 @@ const JdList = ({ jds, setJds, selectedJdIds, onSelectionChange, showAddButton =
             </Typography>
         )}
 
-
-      {/* Scrollable List Area */}
       <Box sx={{ flexGrow: 1, overflowY: 'auto', pr: 0.5, mt: (!showAddButton && jds?.length > 0) ? 0 : 1 }}>
         {jds?.map(jd => (
           <JdCard
             key={jd.id}
             jd={jd}
-            onDelete={showAddButton ? handleDeleteJd : undefined} // Only pass delete if on admin page
+            onDelete={showAddButton ? handleDeleteJd : undefined}
             onSelect={handleToggleSelection}
             isSelected={selectedJdIds.includes(jd.id)}
-            showDeleteButton={showAddButton} // Tell card whether to show delete
+            showDeleteButton={showAddButton}
+            onViewDetails={handleViewDetails} // Pass the handler down
           />
         ))}
       </Box>
 
-      {/* Modal (only rendered if needed) */}
+      {/* Add Modal */}
       {showAddButton && (
         <AddJdModal
-            isOpen={isModalOpen}
-            onClose={() => { setIsModalOpen(false); setError(''); }}
+            isOpen={isAddModalOpen}
+            onClose={() => { setIsAddModalOpen(false); setError(''); }}
             onAdd={handleAddJd}
             isAdding={isLoading}
             addError={error}
         />
       )}
+
+       {/* View Details Dialog */}
+       <ViewJdDialog
+           open={isViewDialogOpen}
+           onClose={handleCloseViewDialog}
+           jd={jdToView}
+        />
+
     </Box>
   );
 };
+
+// Need to import VisibilityIcon if using it in the helper text
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 export default JdList;

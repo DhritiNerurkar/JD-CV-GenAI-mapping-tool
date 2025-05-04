@@ -117,28 +117,6 @@ const MappingPage = ({ jds }) => {
         </Paper>
       </Box>
 
-      {/* Bottom Section: Charts (only show if results exist) */}
-      {analysisResults && !isLoading && (
-        <Paper elevation={2} sx={{ p: 2, mb: 3, clear: 'both', mt: 4 }}>
-          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-            Analysis Overview {primaryJdTitle && `for "${primaryJdTitle}"`}
-          </Typography>
-          <Grid container spacing={3}>
-            {/* Score Overview Chart */}
-            <Grid item xs={12} md={4}>
-              <ScoreOverviewChart results={resultsForCharts} />
-            </Grid>
-            {/* Existing Charts */}
-            <Grid item xs={12} md={4}>
-              <ScoreDistributionChart results={resultsForCharts} />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <AverageBreakdownChart results={resultsForCharts} />
-            </Grid>
-          </Grid>
-        </Paper>
-      )}
-
       {/* Analysis Results List (only show if results exist) */}
       {!isLoading && analysisResults && (
         <AnalysisResults analysisData={analysisResults} jds={jds} />

@@ -1,20 +1,50 @@
 import React from 'react';
 import {
-  Accordion, AccordionSummary, AccordionDetails, Typography, Box, Chip, List, ListItem, ListItemIcon, ListItemText, Grid, Paper, Divider
+  Accordion, AccordionSummary, AccordionDetails, Typography, Box, Chip,
+  List, ListItem, ListItemIcon, ListItemText, Grid, Paper, Divider, alpha,
+  useTheme,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import CircularScoreIndicator from '../common/CircularScoreIndicator'; // Import the updated component
+import CircularScoreIndicator from '../common/CircularScoreIndicator';
+// Ensure ScoreBreakdown is NOT imported if rendering circles directly here
+// import ScoreBreakdown from './ScoreBreakdown';
 
 const getScoreChipProps = (score) => {
-    // Use Filled variant for overall score chip in header
-    if (score >= 85) return { color: 'success', variant: 'filled' };
-    if (score >= 65) return { color: 'warning', variant: 'filled' };
-    return { color: 'error', variant: 'filled' };
+  if (score >= 85) return { color: 'success', variant: 'filled' };
+  if (score >= 65) return { color: 'warning', variant: 'filled' };
+  return { color: 'error', variant: 'filled' };
 };
 
+// renderListItem helper
+const renderListItem = (item, index, type, lastIndex) => (
+  <ListItem
+    key={`${type}-${index}-${item.substring(0, 10)}`}
+    disableGutters
+    sx={{
+      py: 0.75,
+      alignItems: 'flex-start',
+      borderBottom: index < lastIndex ? '1px dashed' : 'none',
+      borderColor: 'divider',
+    }}
+  >
+    <ListItemIcon sx={{ minWidth: 32, color: `${type === 'hl' ? 'success' : 'error'}.main`, mt: '4px' }}>
+      {type === 'hl' ?
+        <CheckCircleOutlineIcon fontSize="small" /> :
+        <ErrorOutlineIcon fontSize="small" />
+      }
+    </ListItemIcon>
+    <ListItemText
+      primary={item}
+      primaryTypographyProps={{ variant: 'body2', sx: { wordBreak: 'break-word' } }}
+    />
+  </ListItem>
+);
+
+
 const CvResultItem = ({ analysis, rank }) => {
+  const theme = useTheme();
   if (!analysis) return null;
 
   const overallScore = analysis.overall_score ?? 0;
@@ -28,16 +58,15 @@ const CvResultItem = ({ analysis, rank }) => {
   ];
 
   return (
-    <Accordion sx={{ mb: 1.5, '&:before': { display: 'none' }, borderRadius: 2, overflow: 'hidden' }} elevation={1} defaultExpanded={rank === 1} /* Optionally expand the first item */ >
+    // Key added to Accordion for potential rendering improvements
+    <Accordion key={`accordion-${rank}-${analysis.cv_filename}`} sx={{ mb: 2 }} defaultExpanded={rank === 1}>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
         aria-controls={`panel${rank}-content`}
         id={`panel${rank}-header`}
-        sx={{
-          '& .MuiAccordionSummary-content': { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', },
-          bgcolor: 'action.hover', borderBottom: 1, borderColor: 'divider',
-        }}
+        sx={{ '& .MuiAccordionSummary-content': { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' } }}
       >
+        {/* Header Content */}
         <Box sx={{ display: 'flex', alignItems: 'center', overflow: 'hidden', pr: 1 }}>
           <Typography variant="body1" color="text.secondary" sx={{ mr: 1.5, minWidth: '30px', textAlign: 'right', fontWeight: 'medium' }}>
             #{rank}
@@ -46,93 +75,102 @@ const CvResultItem = ({ analysis, rank }) => {
             {analysis.cv_filename}
           </Typography>
         </Box>
-        <Chip
-          label={`${overallScore}/100`}
-          color={chipProps.color}
-          variant={chipProps.variant}
-          size="medium" // Slightly larger chip
-          sx={{ fontWeight: 'bold' }}
-        />
+        <Chip label={`${overallScore}/100`} color={chipProps.color} variant={chipProps.variant} size="medium" sx={{ fontWeight: 'bold' }} />
       </AccordionSummary>
-      <AccordionDetails sx={{ bgcolor: 'background.paper', p: {xs: 1.5, sm: 2.5} }}> {/* Responsive padding */}
 
-         <Grid container spacing={3} alignItems="center" sx={{mb: 2.5}}>
-            {/* Left side: Overall score circle */}
-            <Grid item xs={12} sm={4} md={3} sx={{display: 'flex', justifyContent: 'center'}}>
-                 <CircularScoreIndicator
-                    score={overallScore}
-                    size={100} // Larger size for overall score
-                    scoreVariant="h5" // Larger font for score
-                    scoreWeight="medium"
-                    label="Overall Match"
-                    labelVariant="body2"
-                 />
+      <AccordionDetails sx={{ p: 0, bgcolor: 'background.paper' }}>
+
+          {/* --- Section 1: Overall Score & Reasoning (Side-by-Side) --- */}
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
+            <Grid
+            container
+            spacing={2}
+            alignItems="center"
+            sx={{ mb: 2.5 }}
+            wrap="nowrap" // Force horizontal layout
+            >
+            {/* Score Indicator */}
+            <Grid item sx={{ flexShrink: 0 }}>
+                <CircularScoreIndicator
+                key={`overall-score-${rank}`}
+                score={overallScore}
+                size={100}
+                scoreVariant="h5"
+                scoreWeight="medium"
+                label="Overall Match"
+                labelVariant="body2"
+                />
             </Grid>
-             {/* Right side: Reasoning */}
-             <Grid item xs={12} sm={8} md={9}>
+
+            {/* Reasoning Text */}
+            <Grid item xs>
+                <Box
+                sx={{
+                    p: 2,
+                    bgcolor: (theme) => alpha(theme.palette.grey[500], 0.04),
+                    borderRadius: (theme) => theme.shape.borderRadius,
+                    border: 1,
+                    borderColor: 'divider',
+                    display: 'flex',
+                    alignItems: 'center',
+                    height: '100%',
+                }}
+                >
                 <Typography variant="body2" sx={{ fontStyle: 'italic' }} color="text.secondary">
-                    "{(analysis.reasoning && analysis.reasoning.trim() !== '') ? analysis.reasoning : 'No reasoning provided.'}"
+                    "{(analysis.reasoning && analysis.reasoning.trim() !== '')
+                    ? analysis.reasoning
+                    : 'No reasoning provided.'}"
                 </Typography>
-             </Grid>
-         </Grid>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Circular Breakdown Scores */}
-        <Typography variant="h6" sx={{ mb: 1.5, textAlign: 'center' }}>Score Breakdown</Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-start', flexWrap: 'wrap', mb: 2.5 }}>
-            {breakdownScores.map(item => (
-                 <CircularScoreIndicator
-                    key={item.label}
-                    score={item.value ?? 0}
-                    label={item.label}
-                    size={65} // Smaller size for breakdown
-                 />
-            ))}
+                </Box>
+            </Grid>
+            </Grid>
         </Box>
+          {/* --- End Section 1 --- */}
 
-         <Divider sx={{ my: 2 }} />
+          <Divider />
 
-        {/* Highlights & Gaps */}
-        <Grid container spacing={3}>
-            {/* Highlights Column */}
-            <Grid item xs={12} md={6}>
-                 <Typography variant="h6" gutterBottom sx={{ color: 'success.dark' }}>
-                     Key Highlights
-                 </Typography>
-                {(analysis.key_highlights && analysis.key_highlights.length > 0) ? (
-                    <List dense disablePadding>
-                    {analysis.key_highlights.map((item, index) => (
-                        <ListItem key={`hl-${index}`} disableGutters sx={{ py: 0.1, alignItems: 'flex-start' }}>
-                            <ListItemIcon sx={{ minWidth: 28, color: 'success.main', mt: '4px' }}><CheckCircleOutlineIcon fontSize="small" /></ListItemIcon>
-                            <ListItemText primary={item} primaryTypographyProps={{ variant: 'body2' }} />
-                        </ListItem>
-                    ))}
-                    </List>
-                ) : (
-                     <Typography variant="body2" color="text.secondary" sx={{pl: 3.5}}>None identified.</Typography> // Indent slightly
-                )}
+          {/* --- Section 2: Score Breakdown (Circular Indicators) --- */}
+          <Box sx={{ p: {xs: 2, sm: 3} }}>
+            <Typography variant="h6" sx={{ mb: 2.5 /* Increased margin */, textAlign: 'center' }}>Score Breakdown</Typography>
+            <Grid container spacing={1} justifyContent="center" alignItems="flex-start">
+                {breakdownScores.map(item => (
+                    <Grid item xs={6} sm={3} key={item.label} sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <CircularScoreIndicator
+                            key={`breakdown-${item.label}-${rank}`} // Add key
+                            score={item.value ?? 0}
+                            label={item.label}
+                            size={75}
+                            scoreVariant="body1"
+                         />
+                    </Grid>
+                ))}
             </Grid>
+          </Box>
+          {/* --- End Section 2 --- */}
 
-             {/* Gaps Column */}
-             <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom sx={{ color: 'error.dark' }}>
-                    Potential Gaps
-                </Typography>
-                 {(analysis.skill_gaps && analysis.skill_gaps.length > 0) ? (
-                    <List dense disablePadding>
-                    {analysis.skill_gaps.map((item, index) => (
-                        <ListItem key={`gap-${index}`} disableGutters sx={{ py: 0.1, alignItems: 'flex-start' }}>
-                            <ListItemIcon sx={{ minWidth: 28, color: 'error.main', mt: '4px' }}><ErrorOutlineIcon fontSize="small" /></ListItemIcon>
-                            <ListItemText primary={item} primaryTypographyProps={{ variant: 'body2' }} />
-                        </ListItem>
-                    ))}
-                    </List>
-                 ) : (
-                      <Typography variant="body2" color="text.secondary" sx={{pl: 3.5}}>None identified.</Typography> // Indent slightly
-                 )}
-            </Grid>
-        </Grid>
+          {/* --- Section 3: Highlights & Gaps (Flexbox Approach) --- */}
+           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, bgcolor: 'background.default', borderTop: 1, borderColor: 'divider' }}>
+                {/* Highlights Column */}
+                <Box sx={{ width: { xs: '100%', md: '50%' }, p: { xs: 2, sm: 3 }, borderBottom: { xs: 1, md: 0 }, borderRight: { xs: 0, md: 1 }, borderColor: 'divider', boxSizing: 'border-box' }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: 'success.dark', display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                        <CheckCircleOutlineIcon sx={{ mr: 1, fontSize: '1.2rem' }} /> Key Highlights
+                    </Typography>
+                    <Paper variant='outlined' sx={{ bgcolor: 'background.paper', p: 2, minHeight: 120 }}>
+                         {(analysis.key_highlights && analysis.key_highlights.length > 0) ? ( <List dense disablePadding>{analysis.key_highlights.map((item, index) => ( renderListItem(item, index, 'hl', analysis.key_highlights.length - 1) ))}</List>) : ( <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>None identified.</Typography> )}
+                    </Paper>
+                </Box>
+                {/* Gaps Column */}
+                <Box sx={{ width: { xs: '100%', md: '50%' }, p: { xs: 2, sm: 3 }, boxSizing: 'border-box' }}>
+                    <Typography variant="h6" gutterBottom sx={{ color: 'error.dark', display: 'flex', alignItems: 'center', mb: 1.5 }}>
+                        <ErrorOutlineIcon sx={{ mr: 1, fontSize: '1.2rem' }}/> Potential Gaps
+                    </Typography>
+                    <Paper variant='outlined' sx={{ bgcolor: 'background.paper', p: 2, minHeight: 120 }}>
+                        {(analysis.skill_gaps && analysis.skill_gaps.length > 0) ? ( <List dense disablePadding>{analysis.skill_gaps.map((item, index) => ( renderListItem(item, index, 'gap', analysis.skill_gaps.length - 1) ))}</List> ) : ( <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>None identified.</Typography> )}
+                    </Paper>
+                </Box>
+           </Box>
+           {/* --- End Section 3 --- */}
+
       </AccordionDetails>
     </Accordion>
   );

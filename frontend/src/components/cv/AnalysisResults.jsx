@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Box, Typography, Select, MenuItem, FormControl, InputLabel, Slider, Paper, 
+  Box, Typography, Select, MenuItem, FormControl, InputLabel, Slider, Paper,
   ToggleButtonGroup, ToggleButton, Tabs, Tab, Button, Divider, Chip,
   useTheme, Card, IconButton, Grid
 } from '@mui/material';
@@ -13,11 +13,11 @@ import TuneIcon from '@mui/icons-material/Tune';
 import CvResultItem from './CvResultItem';
 
 const sortOptions = [
-    { value: 'overall_score', label: 'Overall' },
-    { value: 'skills_match_score', label: 'Skills' },
-    { value: 'experience_relevance_score', label: 'Experience' },
-    { value: 'education_fit_score', label: 'Education' },
-    { value: 'keyword_alignment_score', label: 'Keywords' },
+  { value: 'overall_score', label: 'Overall' },
+  { value: 'skills_match_score', label: 'Skills' },
+  { value: 'experience_relevance_score', label: 'Experience' },
+  { value: 'education_fit_score', label: 'Education' },
+  { value: 'keyword_alignment_score', label: 'Keywords' },
 ];
 
 const AnalysisResults = ({ analysisData, jds }) => {
@@ -48,14 +48,14 @@ const AnalysisResults = ({ analysisData, jds }) => {
 
   const handleSortChange = (event, newSortBy) => {
     if (newSortBy !== null) { // Prevent unselecting all buttons
-        setSortBy(newSortBy);
+      setSortBy(newSortBy);
     }
   };
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
-    
-    // Here you would typically filter by score range based on tab
+
+    // Filter by score range based on tab
     if (newValue === 0) { // All
       setScoreFilter([0, 100]);
     } else if (newValue === 1) { // Strong matches
@@ -74,9 +74,9 @@ const AnalysisResults = ({ analysisData, jds }) => {
         (item.overall_score ?? 0) >= scoreFilter[0] && (item.overall_score ?? 0) <= scoreFilter[1]
       )
       .sort((a, b) => {
-          const scoreA = a[sortBy] ?? 0; // Handle missing scores
-          const scoreB = b[sortBy] ?? 0;
-          return scoreB - scoreA; // Descending sort
+        const scoreA = a[sortBy] ?? 0; // Handle missing scores
+        const scoreB = b[sortBy] ?? 0;
+        return scoreB - scoreA; // Descending sort
       });
   }, [resultsForSelectedJd, scoreFilter, sortBy]); // Recalculate only when these change
 
@@ -85,23 +85,23 @@ const AnalysisResults = ({ analysisData, jds }) => {
   }
 
   return (
-    <Paper elevation={9} sx={{ 
-      mt: 4, 
-      clear: 'both', 
+    <Paper elevation={9} sx={{
+      mt: 4,
+      clear: 'both',
       borderRadius: 6,
       overflow: 'hidden',
     }}>
       {/* Header */}
-      <Box sx={{ 
-        p: 3, 
-        bgcolor: theme.palette.primary.main, 
+      <Box sx={{
+        p: 3,
+        bgcolor: theme.palette.primary.main,
         color: 'white',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center'
       }}>
         <Typography variant="h5">Ranked Candidates</Typography>
-        
+
         <Box sx={{ display: 'flex', gap: 1 }}>
           <IconButton 
             color="inherit" 
@@ -169,6 +169,7 @@ const AnalysisResults = ({ analysisData, jds }) => {
                 ))}
               </ToggleButtonGroup>
             </Grid>
+            
             
             {/* Score Filter */}
             <Grid item xs={12} md={8}>
@@ -249,7 +250,7 @@ const AnalysisResults = ({ analysisData, jds }) => {
 
       {/* Results List */}
       {selectedJdIdForView && processedResults.length > 0 && (
-        <Box sx={{ p: 8 }}>
+        <Box sx={{ p: 4 }}>
           <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, fontWeight: 'medium', color: 'text.secondary' }}>
              Displaying {processedResults.length} candidate{processedResults.length !== 1 ? 's' : ''}
           </Typography>

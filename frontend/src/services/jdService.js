@@ -6,7 +6,7 @@ export const fetchJds = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching JDs:", error);
-    throw error; // Re-throw to be caught by the component
+    throw error;
   }
 };
 
@@ -19,6 +19,20 @@ export const addJd = async (jdData) => {
     throw error;
   }
 };
+
+// --- NEW UPDATE FUNCTION ---
+export const updateJd = async (jdId, jdData) => {
+  try {
+      // Use PUT request to the specific JD endpoint
+      const response = await apiClient.put(`/jds/${jdId}`, jdData);
+      return response.data; // Return the updated JD data from backend
+  } catch (error) {
+      console.error(`Error updating JD ${jdId}:`, error);
+      throw error;
+  }
+};
+// --- END NEW UPDATE FUNCTION ---
+
 
 export const deleteJd = async (jdId) => {
   try {

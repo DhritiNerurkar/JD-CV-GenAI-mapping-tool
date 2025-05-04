@@ -109,7 +109,7 @@ const CvResultItem = ({ analysis, rank }) => {
                     p: 5,
                     bgcolor: (theme) => alpha(theme.palette.grey[500], 0.04),
                     borderRadius: (theme) => theme.shape.borderRadius,
-                    border: 1,
+                    border: 8,
                     borderColor: 'divider',
                     display: 'flex',
                     alignItems: 'center',

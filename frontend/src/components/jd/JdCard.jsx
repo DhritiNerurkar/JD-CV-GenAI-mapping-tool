@@ -1,26 +1,53 @@
 import React from 'react';
 import {
-    Card, CardActionArea, CardContent, Typography, IconButton, Box, Tooltip, Button, alpha // Added Button
+    Card, CardActionArea, CardContent, Typography, IconButton, Box, Tooltip, Button, alpha
 } from '@mui/material';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import VisibilityIcon from '@mui/icons-material/Visibility'; // Icon for view button
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
 
-// Added showDeleteButton and onViewDetails props
-const JdCard = ({ jd, onDelete, onSelect, isSelected, showDeleteButton, onViewDetails }) => {
+const JdCard = ({
+    jd,
+    onDelete,
+    onSelect,
+    isSelected,
+    showDeleteButton,
+    showEditButton,
+    onViewDetails,
+    onEdit
+ }) => {
 
   const descriptionText = jd?.description || 'No description available.';
 
+  // --- Handlers with event stopping ---
   const handleDelete = (e) => {
-    e.stopPropagation(); // Prevent card selection
+    e.stopPropagation(); // Prevent CardActionArea click
     if (onDelete && window.confirm(`Are you sure you want to delete JD: "${jd.title}"?`)) {
+      console.log("JdCard: Calling onDelete for ID:", jd.id); // Debug Log
       onDelete(jd.id);
     }
   };
 
    const handleViewClick = (e) => {
-    e.stopPropagation(); // Prevent card selection
-    onViewDetails(jd); // Pass the full JD object up
+    e.stopPropagation(); // Prevent CardActionArea click
+    if (onViewDetails) {
+        console.log("JdCard: Calling onViewDetails for JD:", jd); // Debug Log
+        onViewDetails(jd);
+    }
   };
+
+   const handleEditClick = (e) => {
+    e.stopPropagation(); // Prevent CardActionArea click
+    if (onEdit) {
+        console.log("JdCard: Calling onEdit for JD:", jd); // Debug Log
+        onEdit(jd);
+    }
+   };
+   // --- End Handlers ---
+
+
+  // Determine if the card itself should be interactive (for selection)
+  const isCardSelectable = typeof onSelect === 'function';
 
   return (
     <Card
@@ -32,12 +59,20 @@ const JdCard = ({ jd, onDelete, onSelect, isSelected, showDeleteButton, onViewDe
         borderWidth: isSelected ? 1.5 : 1,
        }}
     >
-      {/* --- REMOVED Tooltip Wrapper --- */}
-      {/* Use CardActionArea primarily for selection highlighting/ripple */}
-      <CardActionArea onClick={() => onSelect(jd.id)} sx={{ p: 1.5 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      {/* CardActionArea is only really needed if the card is selectable */}
+      {/* We can conditionally wrap or just use a Box and handle clicks separately */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', p: 1.5 }}>
+
           {/* Text Content */}
-          <Box sx={{ overflow: 'hidden', mr: 1, flexGrow: 1 /* Allow text to take space */ }}>
+          {/* Make text area clickable for selection if enabled */}
+          <Box
+             sx={{
+                 overflow: 'hidden', mr: 1, flexGrow: 1,
+                 cursor: isCardSelectable ? 'pointer' : 'default', // Change cursor if selectable
+                 '&:hover': isCardSelectable ? { opacity: 0.9 } : {}, // Slight hover effect if selectable
+             }}
+             onClick={isCardSelectable ? () => onSelect(jd.id) : undefined} // Selection click on text area
+            >
             <Typography variant="subtitle1" noWrap fontWeight="medium" title={jd.title}>
                 {jd.title}
             </Typography>
@@ -47,38 +82,39 @@ const JdCard = ({ jd, onDelete, onSelect, isSelected, showDeleteButton, onViewDe
           </Box>
 
            {/* Action Buttons Area */}
-           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ml: 1, flexShrink: 0 /* Prevent shrinking */ }}>
+           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ml: 1, flexShrink: 0 }}>
                 {/* View Details Button */}
-                <Tooltip title="View Full Description">
-                    <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={handleViewClick}
-                        aria-label={`View details for JD ${jd.title}`}
-                        sx={{ mb: showDeleteButton ? 0.5 : 0 /* Add margin if delete button exists */, '&:hover': { backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1)} }}
-                    >
-                        <VisibilityIcon fontSize="small" />
-                    </IconButton>
-                </Tooltip>
+                {onViewDetails && (
+                    <Tooltip title="View Full Description">
+                        {/* Ensure onClick is correctly passed and called */}
+                        <IconButton size="small" color="primary" onClick={handleViewClick} aria-label={`View details for JD ${jd.title}`} sx={{ mb: (showEditButton || showDeleteButton) ? 0.5 : 0, '&:hover': { backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1)} }}>
+                            <VisibilityIcon fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                )}
+
+                {/* Edit Button (Conditional) */}
+                {showEditButton && onEdit && (
+                    <Tooltip title="Edit JD">
+                         {/* Ensure onClick is correctly passed and called */}
+                         <IconButton size="small" color="secondary" onClick={handleEditClick} aria-label={`Edit JD ${jd.title}`} sx={{ mb: showDeleteButton ? 0.5 : 0, '&:hover': { backgroundColor: (theme) => alpha(theme.palette.secondary.main, 0.1)} }}>
+                            <EditIcon fontSize="small" />
+                         </IconButton>
+                     </Tooltip>
+                )}
 
                 {/* Delete Button (Conditional) */}
-                {showDeleteButton && (
+                {showDeleteButton && onDelete && (
                     <Tooltip title="Delete JD">
-                        <IconButton
-                            size="small"
-                            color="error"
-                            onClick={handleDelete}
-                            aria-label={`Delete JD ${jd.title}`}
-                            sx={{ color: 'error.light', '&:hover': { color: 'error.main', backgroundColor: (theme) => alpha(theme.palette.error.main, 0.1)} }}
-                        >
+                        {/* Ensure onClick is correctly passed and called */}
+                        <IconButton size="small" color="error" onClick={handleDelete} aria-label={`Delete JD ${jd.title}`} sx={{ color: 'error.light', '&:hover': { color: 'error.main', backgroundColor: (theme) => alpha(theme.palette.error.main, 0.1)} }}>
                             <DeleteForeverIcon fontSize="small" />
                         </IconButton>
                     </Tooltip>
                 )}
            </Box> {/* End Action Buttons Area */}
 
-        </Box>
-      </CardActionArea>
+      </Box> {/* End Main Flex Box */}
     </Card>
   );
 };

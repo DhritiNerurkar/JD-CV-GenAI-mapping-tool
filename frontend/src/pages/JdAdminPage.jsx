@@ -1,24 +1,27 @@
 import React from 'react';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper, Divider } from '@mui/material';
 import JdList from '../components/jd/JdList'; // Reusing JdList
 
-// Receives initial JDs and the setter from App
-const JdAdminPage = ({ initialJds, setJds }) => {
+// Receives initial JDs (current state from App) and the setter from App
+const JdAdminPage = ({ initialJds, setJds }) => { // Props from App.jsx
 
   return (
-    <Paper elevation={2} sx={{ p: { xs: 2, md: 3 } }}> {/* Add responsive padding */}
+    <Paper elevation={1} sx={{ p: { xs: 2, md: 3 } }}>
       <Typography variant="h4" gutterBottom>
         Manage Job Descriptions
       </Typography>
       <Typography paragraph color="text.secondary">
-        Add new job descriptions or remove existing ones. These will be available in the JD-CV Mapping tab.
+        Add new job descriptions or remove/edit existing ones using the buttons on each card. These JDs will be available in the JD-CV Mapping tab.
       </Typography>
+      <Divider sx={{ my: 2 }} />
+      {/* Pass the received prop (current list) as the 'jds' prop to JdList */}
       <JdList
-        jds={initialJds}
-        setJds={setJds} // Pass the setter down so JdList can update App's state
-        selectedJdIds={[]} // No selection needed on this page
-        onSelectionChange={() => {}} // No-op selection change
-        showAddButton={true} // Explicitly show add button
+        jds={initialJds} // Pass the current list received from App
+        setJds={setJds} // Pass the setter function down
+        selectedJdIds={[]} // No selection state needed here
+        onSelectionChange={() => {}} // No selection action needed here
+        showAddButton={true} // Show Add button and enable Edit/Delete
+        allowSelection={false} // Disable selection click behavior
       />
     </Paper>
   );

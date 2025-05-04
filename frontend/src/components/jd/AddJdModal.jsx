@@ -3,39 +3,62 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, CircularProgress, Alert, Box
 } from '@mui/material';
 
-// Receive isAdding and addError as props from JdList
-const AddJdModal = ({ isOpen, onClose, onAdd, isAdding, addError }) => {
+// Added isEditMode and initialData props
+const AddJdModal = ({
+  isOpen, onClose, onSave, // Renamed onAdd to onSave for clarity
+  isSaving, // Renamed isAdding to isSaving
+  saveError, // Renamed addError to saveError
+  isEditMode = false, // Default to Add mode
+  initialData = null // Data to pre-fill for editing
+}) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [internalError, setInternalError] = useState('');
 
-  // Clear form when modal opens or closes
+  // Effect to pre-fill form when opening in Edit mode
   useEffect(() => {
-      if (!isOpen) {
+      if (isOpen && isEditMode && initialData) {
+          setTitle(initialData.title || '');
+          setDescription(initialData.description || '');
+          setInternalError(''); // Clear previous errors
+          console.log("Modal opened in Edit mode with data:", initialData);
+      } else if (isOpen && !isEditMode) {
+          // Clear form for Add mode
           setTitle('');
           setDescription('');
           setInternalError('');
+          console.log("Modal opened in Add mode");
       }
-  }, [isOpen])
+  }, [isOpen, isEditMode, initialData]); // Re-run if these change while open (or on open)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setInternalError(''); // Clear local validation error
+    setInternalError('');
     if (!title || !description) {
         setInternalError('Title and Description are required.');
         return;
     }
-    // onAdd function now handles API call and its loading/error state
-    await onAdd({ title, description });
-    // If onAdd is successful, the parent (JdList) will close the modal.
-    // If it fails, JdList keeps the modal open and passes the error via addError.
+    // Call the generic onSave handler passed from parent
+    // Parent (JdList) will know whether to call addJd or updateJd
+    await onSave({ title, description });
+    // Parent will close modal on success
   };
+
+  // Clear local error when modal is closed externally
+   useEffect(() => {
+      if (!isOpen) {
+          setInternalError('');
+      }
+   }, [isOpen]);
+
+  const modalTitle = isEditMode ? 'Edit Job Description' : 'Add New Job Description';
+  const saveButtonText = isEditMode ? 'Save Changes' : 'Add JD';
 
   return (
     <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Add New Job Description</DialogTitle>
+      <DialogTitle>{modalTitle}</DialogTitle>
       <DialogContent>
-        {(addError || internalError) && <Alert severity="error" sx={{ mb: 2 }}>{addError || internalError}</Alert>}
+        {(saveError || internalError) && <Alert severity="error" sx={{ mb: 2 }}>{saveError || internalError}</Alert>}
         <TextField
           autoFocus
           margin="dense"
@@ -47,7 +70,8 @@ const AddJdModal = ({ isOpen, onClose, onAdd, isAdding, addError }) => {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          disabled={isAdding}
+          disabled={isSaving}
+          sx={{ mb: 2 }} // Add margin bottom
         />
         <TextField
           margin="dense"
@@ -57,35 +81,32 @@ const AddJdModal = ({ isOpen, onClose, onAdd, isAdding, addError }) => {
           fullWidth
           variant="outlined"
           multiline
-          rows={6}
+          rows={8} // Increased rows slightly
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
-          disabled={isAdding}
+          disabled={isSaving}
         />
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={isAdding} color="inherit">
+        <Button onClick={onClose} disabled={isSaving} color="inherit">
           Cancel
         </Button>
-        <Box sx={{ position: 'relative' }}> {/* Wrapper for spinner */}
+        <Box sx={{ position: 'relative' }}>
             <Button
                 onClick={handleSubmit}
                 variant="contained"
-                disabled={isAdding}
+                disabled={isSaving}
                 >
-                Add JD
+                {isSaving ? 'Saving...' : saveButtonText}
             </Button>
-            {isAdding && (
+            {isSaving && (
             <CircularProgress
                 size={24}
                 sx={{
-                color: 'primary.main',
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                marginTop: '-12px',
-                marginLeft: '-12px',
+                    color: 'primary.main',
+                    position: 'absolute', top: '50%', left: '50%',
+                    marginTop: '-12px', marginLeft: '-12px',
                 }}
             />
             )}

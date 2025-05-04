@@ -81,32 +81,32 @@ const CvResultItem = ({ analysis, rank }) => {
       <AccordionDetails sx={{ p: 0, bgcolor: 'background.paper' }}>
 
           {/* --- Section 1: Overall Score & Reasoning (Side-by-Side) --- */}
-          <Box sx={{ p: { xs: 2, sm: 3 } }}>
+          <Box sx={{ p: { xs: 2, sm: 5 } }}>
             <Grid
             container
-            spacing={2}
+            spacing={8}
             alignItems="center"
+            wrap="nowrap"
             sx={{ mb: 2.5 }}
-            wrap="nowrap" // Force horizontal layout
             >
-            {/* Score Indicator */}
-            <Grid item sx={{ flexShrink: 0 }}>
+            {/* --- Score Indicator --- */}
+            <Grid item sx={{ flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
                 <CircularScoreIndicator
                 key={`overall-score-${rank}`}
                 score={overallScore}
-                size={100}
+                size={180}
                 scoreVariant="h5"
                 scoreWeight="medium"
                 label="Overall Match"
-                labelVariant="body2"
+                labelVariant="body5"
                 />
             </Grid>
 
-            {/* Reasoning Text */}
+            {/* --- Reasoning Box --- */}
             <Grid item xs>
                 <Box
                 sx={{
-                    p: 2,
+                    p: 5,
                     bgcolor: (theme) => alpha(theme.palette.grey[500], 0.04),
                     borderRadius: (theme) => theme.shape.borderRadius,
                     border: 1,
@@ -116,10 +116,12 @@ const CvResultItem = ({ analysis, rank }) => {
                     height: '100%',
                 }}
                 >
-                <Typography variant="body2" sx={{ fontStyle: 'italic' }} color="text.secondary">
-                    "{(analysis.reasoning && analysis.reasoning.trim() !== '')
-                    ? analysis.reasoning
-                    : 'No reasoning provided.'}"
+                <Typography
+                    variant="body6"
+                    color="text.secondary"
+                    sx={{ fontStyle: 'italic' }}
+                >
+                    "{analysis.reasoning?.trim() ? analysis.reasoning : 'No reasoning provided.'}"
                 </Typography>
                 </Box>
             </Grid>
@@ -130,8 +132,8 @@ const CvResultItem = ({ analysis, rank }) => {
           <Divider />
 
           {/* --- Section 2: Score Breakdown (Circular Indicators) --- */}
-          <Box sx={{ p: {xs: 2, sm: 3} }}>
-            <Typography variant="h6" sx={{ mb: 2.5 /* Increased margin */, textAlign: 'center' }}>Score Breakdown</Typography>
+          <Box sx={{ p: {xs: 2, sm: 2} }}>
+            <Typography variant="h6" sx={{ mb: 0.5 /* Increased margin */, textAlign: 'center' }}>Score Breakdown</Typography>
             <Grid container spacing={1} justifyContent="center" alignItems="flex-start">
                 {breakdownScores.map(item => (
                     <Grid item xs={6} sm={3} key={item.label} sx={{ display: 'flex', justifyContent: 'center' }}>
@@ -139,7 +141,7 @@ const CvResultItem = ({ analysis, rank }) => {
                             key={`breakdown-${item.label}-${rank}`} // Add key
                             score={item.value ?? 0}
                             label={item.label}
-                            size={75}
+                            size={115}
                             scoreVariant="body1"
                          />
                     </Grid>

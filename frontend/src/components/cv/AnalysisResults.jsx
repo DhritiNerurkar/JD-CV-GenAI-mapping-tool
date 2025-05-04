@@ -85,10 +85,10 @@ const AnalysisResults = ({ analysisData, jds }) => {
   }
 
   return (
-    <Paper elevation={2} sx={{ 
+    <Paper elevation={9} sx={{ 
       mt: 4, 
       clear: 'both', 
-      borderRadius: 2,
+      borderRadius: 6,
       overflow: 'hidden',
     }}>
       {/* Header */}
@@ -122,8 +122,8 @@ const AnalysisResults = ({ analysisData, jds }) => {
       </Box>
       
       {/* JD Selection Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', backgroundColor: '#f8f9fa' }}>
-        <FormControl fullWidth size="small" sx={{ p: 2 }}>
+      <Box sx={{ borderBottom: 3, borderColor: 'divider', backgroundColor: '#f8f9fa', p:2 }}>
+        <FormControl fullWidth size="medium" sx={{ p: 2 }}>
           <InputLabel id="jd-select-label-results">Job Description</InputLabel>
           <Select
             labelId="jd-select-label-results"
@@ -144,8 +144,8 @@ const AnalysisResults = ({ analysisData, jds }) => {
       
       {/* Filter Toolbar */}
       {showFilters && (
-        <Box sx={{ p: 2, bgcolor: '#f8f9fa', borderBottom: 1, borderColor: 'divider' }}>
-          <Grid container spacing={2} alignItems="center">
+        <Box sx={{ p: 3, bgcolor: '#f8f9fa', borderBottom: 1, borderColor: 'divider' }}>
+          <Grid container spacing={70} alignItems="center">
             {/* Sort Control */}
             <Grid item xs={12} md={4}>
               <Typography variant="body2" sx={{ mb: 1, fontWeight: 'medium' }}>Sort by:</Typography>
@@ -154,8 +154,8 @@ const AnalysisResults = ({ analysisData, jds }) => {
                 exclusive
                 onChange={handleSortChange}
                 aria-label="Sort results by"
-                size="small"
-                sx={{ bgcolor: 'white', width: '100%' }}
+                size="medium"
+                sx={{ bgcolor: 'white', width: '190%' }}
               >
                 {sortOptions.map(opt => (
                   <ToggleButton 
@@ -249,7 +249,7 @@ const AnalysisResults = ({ analysisData, jds }) => {
 
       {/* Results List */}
       {selectedJdIdForView && processedResults.length > 0 && (
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 8 }}>
           <Typography variant="subtitle1" gutterBottom sx={{ mb: 2, fontWeight: 'medium', color: 'text.secondary' }}>
              Displaying {processedResults.length} candidate{processedResults.length !== 1 ? 's' : ''}
           </Typography>
